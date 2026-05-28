@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -110,4 +109,3 @@ if st.button("🚨 Start Detection"):
 [INFO] Ethylene concentration = {pred_eth:.2f} ppm
 [INFO] Monitoring complete
 """)
-```
