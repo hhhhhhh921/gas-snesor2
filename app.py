@@ -1,8 +1,6 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 import joblib
-import random
 import time
 
 # =========================
@@ -26,31 +24,32 @@ model_eth = joblib.load("model_eth.pkl")
 # 제목
 # =========================
 
-st.title("🧪 Electronic Nose AI System")
+st.title("🧪 전자코 AI 시스템")
 
-st.subheader("Real-time Gas Leakage Detection")
+st.subheader("실시간 가스 누출 감지 및 농도 예측")
 
 st.write("---")
 
 # =========================
-# 랜덤 감지 버튼
+# 시작 버튼
 # =========================
 
 if st.button("🚨 Start Detection"):
 
-    st.write("### Sensor Status")
-    st.info("Collecting sensor signals...")
+    st.info("센서 데이터 수집 중...")
 
     time.sleep(1)
 
-    # 랜덤 센서값 생성
-    random_sensor = np.random.uniform(
-        low=-50,
-        high=50,
-        size=(1,16)
-    )
+    # =========================
+    # 랜덤 센서 데이터 생성
+    # =========================
 
-    # 예측
+    random_sensor = np.random.randn(1,16) * np.random.randint(10,100)
+
+    # =========================
+    # AI 예측
+    # =========================
+
     pred_co = model_co.predict(random_sensor)[0]
     pred_eth = model_eth.predict(random_sensor)[0]
 
@@ -60,7 +59,11 @@ if st.button("🚨 Start Detection"):
 
     st.write("---")
 
-    st.write("## Prediction Results")
+    st.subheader("Prediction Results")
+
+    # =========================
+    # 결과 카드
+    # =========================
 
     col1, col2 = st.columns(2)
 
@@ -78,29 +81,33 @@ if st.button("🚨 Start Detection"):
 
     st.write("---")
 
+    # =========================
     # 위험도 판단
+    # =========================
 
     if pred_co > 200:
 
         st.error("🚨 HIGH RISK")
-        st.error("Possible dangerous gas leakage detected")
-        st.write("📱 Emergency alert transmitted")
+        st.error("위험한 가스 누출 감지")
+        st.write("📱 긴급 알림 전송 완료")
 
     elif pred_co > 100:
 
         st.warning("⚠ MEDIUM RISK")
-        st.warning("Abnormal gas concentration detected")
+        st.warning("비정상 가스 농도 감지")
 
     else:
 
         st.success("✅ LOW RISK")
-        st.success("Environment stable")
+        st.success("안전 상태 유지 중")
 
     st.write("---")
 
-    # 로그 느낌
+    # =========================
+    # 센서 로그
+    # =========================
 
-    st.write("### System Log")
+    st.subheader("System Log")
 
     st.code(f"""
 [INFO] Sensor array activated
@@ -109,3 +116,11 @@ if st.button("🚨 Start Detection"):
 [INFO] Ethylene concentration = {pred_eth:.2f} ppm
 [INFO] Monitoring complete
 """)
+
+    # =========================
+    # 현재 센서값 표시
+    # =========================
+
+    st.subheader("Current Sensor Values")
+
+    st.write(random_sensor)
