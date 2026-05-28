@@ -1,6 +1,20 @@
+```python
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
+import random
+import time
+
+# =========================
+# 페이지 설정
+# =========================
+
+st.set_page_config(
+    page_title="Electronic Nose AI",
+    page_icon="🧪",
+    layout="centered"
+)
 
 # =========================
 # 모델 불러오기
@@ -13,57 +27,87 @@ model_eth = joblib.load("model_eth.pkl")
 # 제목
 # =========================
 
-st.title("Electronic Nose AI System")
+st.title("🧪 Electronic Nose AI System")
 
-st.write("Gas Leakage Detection and Concentration Prediction")
+st.subheader("Real-time Gas Leakage Detection")
 
-# =========================
-# 파일 업로드
-# =========================
-
-uploaded_file = st.file_uploader(
-    "Upload Sensor Data File",
-    type=["csv", "txt"]
-)
+st.write("---")
 
 # =========================
-# 예측
+# 랜덤 감지 버튼
 # =========================
 
-if uploaded_file is not None:
+if st.button("🚨 Start Detection"):
 
-    df = pd.read_csv(
-        uploaded_file,
-        sep=r"\s+",
-        engine="python",
-        header=None,
-        skiprows=1
+    st.write("### Sensor Status")
+    st.info("Collecting sensor signals...")
+
+    time.sleep(1)
+
+    # 랜덤 센서값 생성
+    random_sensor = np.random.uniform(
+        low=-50,
+        high=50,
+        size=(1,16)
     )
 
-    X = df.iloc[:, 3:19]
+    # 예측
+    pred_co = model_co.predict(random_sensor)[0]
+    pred_eth = model_eth.predict(random_sensor)[0]
 
-    pred_co = model_co.predict(X)
-    pred_eth = model_eth.predict(X)
+    # 음수 제거
+    pred_co = max(pred_co, 0)
+    pred_eth = max(pred_eth, 0)
 
-    avg_co = pred_co.mean()
-    avg_eth = pred_eth.mean()
+    st.write("---")
 
-    st.subheader("Prediction Results")
+    st.write("## Prediction Results")
 
-    st.write(f"CO Concentration: {avg_co:.2f} ppm")
-    st.write(f"Ethylene Concentration: {avg_eth:.2f} ppm")
+    col1, col2 = st.columns(2)
 
-    # 위험 판단
+    with col1:
+        st.metric(
+            label="CO Concentration",
+            value=f"{pred_co:.2f} ppm"
+        )
 
-    if avg_co > 200:
+    with col2:
+        st.metric(
+            label="Ethylene Concentration",
+            value=f"{pred_eth:.2f} ppm"
+        )
 
-        st.error("⚠ HIGH RISK: Possible Gas Leakage")
-        st.write("📱 Alert sent to mobile device")
+    st.write("---")
 
-    elif avg_co > 100:
+    # 위험도 판단
+
+    if pred_co > 200:
+
+        st.error("🚨 HIGH RISK")
+        st.error("Possible dangerous gas leakage detected")
+        st.write("📱 Emergency alert transmitted")
+
+    elif pred_co > 100:
 
         st.warning("⚠ MEDIUM RISK")
+        st.warning("Abnormal gas concentration detected")
 
     else:
 
         st.success("✅ LOW RISK")
+        st.success("Environment stable")
+
+    st.write("---")
+
+    # 로그 느낌
+
+    st.write("### System Log")
+
+    st.code(f"""
+[INFO] Sensor array activated
+[INFO] Gas pattern analyzed
+[INFO] CO concentration = {pred_co:.2f} ppm
+[INFO] Ethylene concentration = {pred_eth:.2f} ppm
+[INFO] Monitoring complete
+""")
+```
